@@ -9,7 +9,7 @@
 
 #include "./evtClass.C"
 
-void findCloseVtxs() {
+void findCloseVtxs(float searchRadSqrd=100.) {
 
 	TFile* inF = new TFile("anatree.root", "OPEN");
 	if(!inF){
@@ -30,7 +30,6 @@ void findCloseVtxs() {
 	garEvt* gEvt = new garEvt();
 	gEvt->SetBranchAddresses(inT);
 
-	float searchRadSqrd = 150.;
 	int searchRad = TMath::Sqrt(searchRadSqrd);
 
 	TString foundVtxsTitleStr = "Number of Vertecies: #delta < ";
@@ -57,7 +56,10 @@ void findCloseVtxs() {
 
 	TCanvas* c = new TCanvas();
 	foundVtxsHist->Draw();
-	c->Print("~/Desktop/foundVtxs.pdf");
+	TString printStr="~/Desktop/foundVtxs";
+	printStr += searchRad;
+	printStr += ".pdf";
+	c->Print(printStr);
 
 	inF->Close();
 }
