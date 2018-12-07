@@ -7,12 +7,14 @@
 
 void countOffPosMus() {
 
-	TFile* inF = new TFile("anatree.root", "OPEN");
+	//TFile* inF = new TFile("anatree.root", "OPEN");
+	TFile* inF = new TFile("./anatreeDiffBeamDir.root", "OPEN");
 	if(!inF){
 		cout << "Falied to load input file, exiting" << endl;
 		return;
 	}
-	TDirectory* inDir = (TDirectory*)inF->Get("anatree.root:/anatree");
+	//TDirectory* inDir = (TDirectory*)inF->Get("anatree.root:/anatree");
+	TDirectory* inDir = (TDirectory*)inF->Get("anatree");
 	if(!inDir){
 		cout << "Falied to load input directory, exiting" << endl;
 		return;
