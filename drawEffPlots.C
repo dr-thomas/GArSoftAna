@@ -8,22 +8,18 @@
 #include <TH2F.h>
 #include <TMath.h>
 #include <TStyle.h>
+#include <TLatex.h>
 
 #include "./evtClass.C"
 
 void drawEffPlots(float searchRadSqrd=100.) {
 
-	TFile* inF = new TFile("./largeBeamAnatree.root", "OPEN");
+	TFile* inF = new TFile("./rootFiles/anaMergedLarger.root", "OPEN");
 	if(!inF){
 		cout << "Falied to load input file, exiting" << endl;
 		return;
 	}
-	TDirectory* inDir = (TDirectory*)inF->Get("anatree");
-	if(!inDir){
-		cout << "Falied to load input directory, exiting" << endl;
-		return;
-	}
-	TTree* inT = (TTree*)inDir->Get("GArAnaTree");
+	TTree* inT = (TTree*)inF->Get("GArAnaTree");
 	if(!inT){
 		cout << "Falied to load input tree, exiting" << endl;
 		return;
@@ -35,12 +31,20 @@ void drawEffPlots(float searchRadSqrd=100.) {
 	int searchRad = TMath::Sqrt(searchRadSqrd);
 
 	Float_t posBins[3][3] = {
-		//{-274.,274.,0.}, TODO: need to populate in x more
-		{-100.,100.,0.},
+		{-274.,274.,0.},
 		{81.,355.,0.},
 		{994.,1254,0.}
 	};
-	float binSize=50.;
+
+	/*
+	Float_t posBins[3][3] = {
+		{-120.,130.,0.},
+		{70.,340.,0.},
+		{950.,1450,0.}
+	};
+	*/
+
+	float binSize=20.;
 	for(int ii=0; ii<3; ii++){
 		posBins[ii][2] = (posBins[ii][1]-posBins[ii][0])/binSize;
 	}
@@ -55,6 +59,7 @@ void drawEffPlots(float searchRadSqrd=100.) {
 	TH2F* recoHistYZ = new TH2F("recoHistYZ","",(int)posBins[1][2],posBins[1][0],posBins[1][1],(int)posBins[2][2],posBins[2][0],posBins[2][1]);
 
 	for(int iEntry=0; iEntry<inT->GetEntries(); iEntry++){
+		if(iEntry%((inT->GetEntries())/10)==0) cout << iEntry*100./(inT->GetEntries()) << "%" << endl;
 		inT->GetEntry(iEntry);
 		if(gEvt->CCNC->at(0)!=0) continue;
 		if(std::abs(gEvt->PDG->at(0))!=13) continue;
@@ -75,9 +80,25 @@ void drawEffPlots(float searchRadSqrd=100.) {
 	}
 
 	gStyle->SetOptStat(0);
+	gStyle->SetTextFont(42);
 
 	TCanvas* c = new TCanvas("can", "can", 2800, 1500);
-    TPad* subPad = new TPad("pad", "pad", 0.1, 0.1, 1.0, 1.0);
+
+	TLatex xText1(0.2,0.955,"X-Y");
+	TLatex xText2(0.515,0.955,"X-Z");
+	TLatex xText3(0.83,0.955,"Y-Z");
+	xText1.Draw();
+	xText2.Draw();
+	xText3.Draw();
+
+	TLatex yText1(0.03,0.65,"True");
+	TLatex yText2(0.03,0.2,"Reco");
+	yText1.SetTextAngle(90);
+	yText2.SetTextAngle(90);
+	yText1.Draw();
+	yText2.Draw();
+
+    TPad* subPad = new TPad("pad", "pad", 0.05, 0.0, 1.0, 0.95);
     subPad->Divide(3, 2, 0.01, 0.01);
     subPad->Draw();
 
@@ -109,16 +130,62 @@ void drawEffPlots(float searchRadSqrd=100.) {
 	subPad->cd(6);
 	recoHistYZ->Draw("colz");
 
-	c->Print("~/Desktop/HgTPCvtxSlices.png");
+	TString printStr = "~/Desktop/HgTPCvtxSlices";
+	printStr += searchRad;
+	printStr += ".png";
+
+	c->Print(printStr);
 
 	c = new TCanvas("can", "can", 2800, 750);
-    subPad = new TPad("pad", "pad", 0.01, 0.1, 1.0, 1.0);
+
+	TString latexStr = "#delta=";
+	latexStr += searchRad;
+	latexStr += "cm";
+	TLatex yText3(0.02,0.5,latexStr);
+	yText3.SetTextAngle(90);
+	yText3.Draw();
+
+    subPad = new TPad("pad", "pad", 0.02, 0.1, 1.0, 1.0);
     subPad->Divide(3, 1, 0.01, 0.01);
     subPad->Draw();
 
 	recoHistXY->Divide(trueHistXY);
 	recoHistXZ->Divide(trueHistXZ);
 	recoHistYZ->Divide(trueHistYZ);
+
+	float nMinForEff=10.;
+
+	//XY
+	for(int ii=0; ii<((int)posBins[0][2]); ii++){
+		for(int jj=0; jj<((int)posBins[1][2]); jj++){
+			if(trueHistXY->GetBinContent(ii+1,jj+1) < nMinForEff) {
+				recoHistXY->SetBinContent(ii+1,jj+1,-1.);
+			}
+		}
+	}
+	//XZ
+	for(int ii=0; ii<((int)posBins[0][2]); ii++){
+		for(int jj=0; jj<((int)posBins[2][2]); jj++){
+			if(trueHistXZ->GetBinContent(ii+1,jj+1) < nMinForEff) {
+				recoHistXZ->SetBinContent(ii+1,jj+1,-1.);
+			}
+		}
+	}
+	//YZ
+	for(int ii=0; ii<((int)posBins[1][2]); ii++){
+		for(int jj=0; jj<((int)posBins[2][2]); jj++){
+			if(trueHistYZ->GetBinContent(ii+1,jj+1) < nMinForEff) {
+				recoHistYZ->SetBinContent(ii+1,jj+1,-1.);
+			}
+		}
+	}
+
+	recoHistXY->SetMinimum(0.);
+	recoHistXY->SetMaximum(1.);
+	recoHistXZ->SetMinimum(0.);
+	recoHistXZ->SetMaximum(1.);
+	recoHistYZ->SetMinimum(0.);
+	recoHistYZ->SetMaximum(1.);
 
 	subPad->cd(3);
 	recoHistYZ->Draw("colz");
@@ -127,7 +194,11 @@ void drawEffPlots(float searchRadSqrd=100.) {
 	subPad->cd(1);
 	recoHistXY->Draw("colz");
 
-	c->Print("~/Desktop/HgTPCeffSlices.png");
+	printStr = "~/Desktop/HgTPCeffSlices";
+	printStr += searchRad;
+	printStr += ".png";
+
+	c->Print(printStr);
 
 	inF->Close();
 }
