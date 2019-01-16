@@ -14,7 +14,11 @@
 
 void drawEffPlots(float searchRadSqrd=100.) {
 
-	TFile* inF = new TFile("./rootFiles/anaMergedLarger.root", "OPEN");
+	//TFile* inF = new TFile("./rootFiles/anaMergedLarger5000.root", "OPEN");
+	TString latexStr="new, w/ FV";
+	//TFile* inF = new TFile("./rootFiles/v01_02_01+/anaMerged.root", "OPEN");
+	//TFile* inF = new TFile("./rootFiles/v01_02_01+/smallBeams/anaMerged.root", "OPEN");
+	TFile* inF = new TFile("./rootFiles/v01_02_01+/smallBeams/individual/anaMergedLeft.root", "OPEN");
 	if(!inF){
 		cout << "Falied to load input file, exiting" << endl;
 		return;
@@ -31,9 +35,16 @@ void drawEffPlots(float searchRadSqrd=100.) {
 	int searchRad = TMath::Sqrt(searchRadSqrd);
 
 	Float_t posBins[3][3] = {
-		{-274.,274.,0.},
-		{81.,355.,0.},
-		{994.,1254,0.}
+		//x
+		//{-274.,274.,0.},
+		{0,250.,0.},
+		//y
+		//{-200,200.,0.},
+		{-100,100.,0.},
+		//z
+		//{994.,1254,0.}
+		{-200,200,0.}
+		//{-130,130.,0.},
 	};
 
 	/*
@@ -44,7 +55,7 @@ void drawEffPlots(float searchRadSqrd=100.) {
 	};
 	*/
 
-	float binSize=20.;
+	float binSize=10.;
 	for(int ii=0; ii<3; ii++){
 		posBins[ii][2] = (posBins[ii][1]-posBins[ii][0])/binSize;
 	}
@@ -61,8 +72,11 @@ void drawEffPlots(float searchRadSqrd=100.) {
 	for(int iEntry=0; iEntry<inT->GetEntries(); iEntry++){
 		if(iEntry%((inT->GetEntries())/10)==0) cout << iEntry*100./(inT->GetEntries()) << "%" << endl;
 		inT->GetEntry(iEntry);
+
 		if(gEvt->CCNC->at(0)!=0) continue;
 		if(std::abs(gEvt->PDG->at(0))!=13) continue;
+		//if(!gEvt->isVertFV(230,30,170)) continue;
+
 		trueHistXY->Fill(gEvt->MCPStartX->at(0),gEvt->MCPStartY->at(0));
 		trueHistXZ->Fill(gEvt->MCPStartX->at(0),gEvt->MCPStartZ->at(0));
 		trueHistYZ->Fill(gEvt->MCPStartY->at(0),gEvt->MCPStartZ->at(0));
@@ -138,9 +152,9 @@ void drawEffPlots(float searchRadSqrd=100.) {
 
 	c = new TCanvas("can", "can", 2800, 750);
 
-	TString latexStr = "#delta=";
-	latexStr += searchRad;
-	latexStr += "cm";
+	//TString latexStr = "#delta=";
+	//latexStr += searchRad;
+	//latexStr += "cm";
 	TLatex yText3(0.02,0.5,latexStr);
 	yText3.SetTextAngle(90);
 	yText3.Draw();

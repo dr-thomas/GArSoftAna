@@ -96,4 +96,16 @@ class garEvt {
 			inT->SetBranchAddress("VertZ", &VertZ, &b_VertZ);
 			inT->SetBranchAddress("VertN", &VertN, &b_VertN);
 		}
+
+		bool isVertFV(float xMax, float xMin, float rMax) {
+			if(VertN->size()==0) return false;
+			float x = VertX->at(0);
+			float y = VertY->at(0);
+			float z = VertZ->at(0);
+			float r2 = y*y+z*z;
+			if(x<(-1.*xMax) || x>xMax) return false;
+			if(x>(-1.*xMin) && x<xMin) return false;
+			if(r2>rMax*rMax) return false;
+			return true;
+		}
 };

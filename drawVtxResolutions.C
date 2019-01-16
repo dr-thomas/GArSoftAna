@@ -14,7 +14,8 @@
 
 void drawVtxResolutions(float searchRadSqrd=100.) {
 
-	TFile* inF = new TFile("./rootFiles/anaMergedLarger.root", "OPEN");
+	//TFile* inF = new TFile("./rootFiles/anaMergedLarger5000.root", "OPEN");
+	TFile* inF = new TFile("./rootFiles/v01_02_01+/anaMerged.root", "OPEN");
 	if(!inF){
 		cout << "Falied to load input file, exiting" << endl;
 		return;
@@ -31,10 +32,21 @@ void drawVtxResolutions(float searchRadSqrd=100.) {
 	int searchRad = TMath::Sqrt(searchRadSqrd);
 
 	Float_t posBins[3][3] = {
+		//x
 		{-274.,274.,0.},
-		{81.,355.,0.},
-		{994.,1254,0.}
+		//{-230.,-30.,0.},
+		//{30.,230.,0.},
+		//{-230,230.,0.},
+		//y
+		//{81.,355.,0.},
+		{-200,200.,0.},
+		//{-130,130.,0.},
+		//z
+		//{994.,1254,0.}
+		{-200,200,0.}
+		//{-130,130.,0.},
 	};
+
 
 	float binSize=20.;
 	for(int ii=0; ii<3; ii++){
@@ -54,6 +66,7 @@ void drawVtxResolutions(float searchRadSqrd=100.) {
 		inT->GetEntry(iEntry);
 		if(gEvt->CCNC->at(0)!=0) continue;
 		if(std::abs(gEvt->PDG->at(0))!=13) continue;
+		if(!gEvt->isVertFV(230,30,170)) continue;
 		//compare all vertecies locations to ??primary?? track start position 
 		float minDiffSqrd=1e6;
 		float closestVtxPos[3];
@@ -84,7 +97,7 @@ void drawVtxResolutions(float searchRadSqrd=100.) {
 
 	TCanvas* c = new TCanvas("can", "can", 2800, 1500);
 
-    TPad* subPad = new TPad("pad", "pad", 0.05, 0.0, 1.0, 0.95);
+    TPad* subPad = new TPad("pad", "pad", 0.0, 0.0, 1.0, 1.0);
     subPad->Divide(3, 2, 0.01, 0.01);
     subPad->Draw();
 
