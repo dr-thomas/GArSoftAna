@@ -1,3 +1,4 @@
 *_C*
 *.root
 rootFiles/*
+.DS_Store
