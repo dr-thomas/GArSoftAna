@@ -54,7 +54,7 @@ void hitCluster() {
 	}
 
 	TH1F* totalResX = new TH1F("totalResX","",200,-200,200);
-	TH1F* totalResY = new TH1F("totalResY","",200,-1,1);
+	TH1F* totalResY = new TH1F("totalResY","",200,-200,200);
 	TH1F* totalResZ = new TH1F("totalResZ","",200,-1,1);
 	for(int iEntry=0; iEntry<inT->GetEntries(); iEntry++){
 		if(iEntry%((inT->GetEntries())/10)==0) cout << iEntry*100./(inT->GetEntries()) << "%" << endl;
@@ -62,19 +62,31 @@ void hitCluster() {
 		if(gEvt->CCNC->at(0)!=0) continue;
 		if(std::abs(gEvt->PDG->at(0))!=13) continue;
 		cout << "event: " << iEntry << endl;
-		for(uint ii=0; ii<gEvt->TrackHitXResidual->size(); ii++){
-			for(uint jj=0; jj<gEvt->TrackHitXResidual->at(ii).size(); jj++){
-				float hitX = gEvt->TrackHitXResidual->at(ii).at(jj);
+		for(uint ii=0; ii<gEvt->TrackHitX->size(); ii++){
+			for(uint jj=0; jj<gEvt->TrackHitX->at(ii).size(); jj++){
+				float hitX = gEvt->TrackHitX->at(ii).at(jj);
 				if(TMath::Abs(hitX)<1e-6) continue;
 				if(TMath::Abs(hitX)>1e9) continue;
 				totalResX->Fill(hitX);
 			}
+			for(uint jj=0; jj<gEvt->TrajHitX->at(ii).size(); jj++){
+				float hitX = gEvt->TrajHitX->at(ii).at(jj);
+				if(TMath::Abs(hitX)<1e-6) continue;
+				if(TMath::Abs(hitX)>1e9) continue;
+				totalResY->Fill(hitX);
+			}
+
 		}
 	}
 
 	TCanvas* c = new TCanvas;
 	totalResX->Draw();
 	c->Print("~/Desktop/test.eps");
+
+	c = new TCanvas;
+	totalResY->Draw();
+	c->Print("~/Desktop/test2.eps");
+	 
 
 	inF->Close();
 }
