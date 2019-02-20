@@ -2,3 +2,4 @@
 *.root
 rootFiles/*
 .DS_Store
+*.npy

@@ -14,8 +14,7 @@
 
 void drawVtxResolutions(float searchRadSqrd=100.) {
 
-	//TFile* inF = new TFile("./rootFiles/anaMergedLarger5000.root", "OPEN");
-	TFile* inF = new TFile("./rootFiles/v01_02_01+/anaMerged.root", "OPEN");
+	TFile* inF = new TFile("./rootFiles/anaMerged.root", "OPEN");
 	if(!inF){
 		cout << "Falied to load input file, exiting" << endl;
 		return;
@@ -53,20 +52,20 @@ void drawVtxResolutions(float searchRadSqrd=100.) {
 		posBins[ii][2] = (posBins[ii][1]-posBins[ii][0])/binSize;
 	}
 
-	TH2F* vtxResX = new TH2F("vtxResX","x Resoltuion",(int)posBins[0][2],posBins[0][0],posBins[0][1],50,-5,5);
-	TH2F* vtxResY = new TH2F("vtxResY","y Resoltuion",(int)posBins[1][2],posBins[1][0],posBins[1][1],50,-5,5);
-	TH2F* vtxResZ = new TH2F("vtxResZ","z Resoltuion",(int)posBins[2][2],posBins[2][0],posBins[2][1],50,-5,5);
+	TH2F* vtxResX = new TH2F("vtxResX","x Resoltuion",(int)posBins[0][2],posBins[0][0],posBins[0][1],100,-2,2);
+	TH2F* vtxResY = new TH2F("vtxResY","y Resoltuion",(int)posBins[1][2],posBins[1][0],posBins[1][1],100,-2,2);
+	TH2F* vtxResZ = new TH2F("vtxResZ","z Resoltuion",(int)posBins[2][2],posBins[2][0],posBins[2][1],100,-2,2);
 
-	TH1F* totalResX = new TH1F("totalResX","",50,-5,5);
-	TH1F* totalResY = new TH1F("totalResY","",50,-5,5);
-	TH1F* totalResZ = new TH1F("totalResZ","",50,-5,5);
+	TH1F* totalResX = new TH1F("totalResX","",50,-2,2);
+	TH1F* totalResY = new TH1F("totalResY","",50,-2,2);
+	TH1F* totalResZ = new TH1F("totalResZ","",50,-2,2);
 
 	for(int iEntry=0; iEntry<inT->GetEntries(); iEntry++){
 		if(iEntry%((inT->GetEntries())/10)==0) cout << iEntry*100./(inT->GetEntries()) << "%" << endl;
 		inT->GetEntry(iEntry);
 		if(gEvt->CCNC->at(0)!=0) continue;
 		if(std::abs(gEvt->PDG->at(0))!=13) continue;
-		if(!gEvt->isVertFV(230,30,170)) continue;
+		//if(!gEvt->isVertFV(230,30,170)) continue;
 		//compare all vertecies locations to ??primary?? track start position 
 		float minDiffSqrd=1e6;
 		float closestVtxPos[3];

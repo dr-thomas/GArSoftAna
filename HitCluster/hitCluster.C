@@ -53,6 +53,10 @@ void hitCluster() {
 		posBins[ii][2] = (posBins[ii][1]-posBins[ii][0])/binSize;
 	}
 
+	TH2F* vtxResX = new TH2F("vtxResX","x Residuals",(int)posBins[0][2],posBins[0][0],posBins[0][1],100,-1,1);
+	TH2F* vtxResY = new TH2F("vtxResY","y Residuals",(int)posBins[1][2],posBins[1][0],posBins[1][1],100,-1,1);
+	TH2F* vtxResZ = new TH2F("vtxResZ","z Residuals",(int)posBins[2][2],posBins[2][0],posBins[2][1],100,-1,1);
+
 	TH1F* totalResX = new TH1F("totalResX","",200,-1,1);
 	TH1F* totalResY = new TH1F("totalResY","",200,-1,1);
 	TH1F* totalResZ = new TH1F("totalResZ","",200,-1,1);
@@ -61,54 +65,64 @@ void hitCluster() {
 		inT->GetEntry(iEntry);
 		if(gEvt->CCNC->at(0)!=0) continue;
 		if(std::abs(gEvt->PDG->at(0))!=13) continue;
-		for(uint iTrk=0; iTrk<gEvt->TrackHitX->size(); iTrk++){
-			if(gEvt->TrackHitX->at(iTrk).size() < 10) continue;
-
-			for(uint jTrk=0; jTrk<gEvt->TrackHitX->at(iTrk).size(); jTrk++){
-
-				float hitX = gEvt->TrackHitX->at(iTrk).at(jTrk);
-				float hitY = gEvt->TrackHitY->at(iTrk).at(jTrk);
-				float hitZ = gEvt->TrackHitZ->at(iTrk).at(jTrk);
-
-				float minDiff=555e10;
-				float closeHitTrj[3] = {-555e10,-555e10,-555e10};
-
-				for(uint iTrj=0; iTrj<gEvt->TrajHitX->size(); iTrj++){
-					for(uint jTrj=0; jTrj<gEvt->TrajHitX->at(iTrj).size(); jTrj++){
-						float hitTrjX = gEvt->TrajHitX->at(iTrj).at(jTrj);
-						float hitTrjY = gEvt->TrajHitY->at(iTrj).at(jTrj);
-						float hitTrjZ = gEvt->TrajHitZ->at(iTrj).at(jTrj);
-						float tempDiff = (hitX-hitTrjX)*(hitX-hitTrjX);
-						tempDiff *= (hitY-hitTrjY)*(hitY-hitTrjY);
-						tempDiff *= (hitZ-hitTrjZ)*(hitZ-hitTrjZ);
-						if(tempDiff<minDiff){
-							minDiff=tempDiff;
-							closeHitTrj[0] = hitTrjX;
-							closeHitTrj[1] = hitTrjY;
-							closeHitTrj[2] = hitTrjZ;
-						}
-					}
+		for(uint iTrk=0; iTrk<gEvt->TrackStartX->size(); iTrk++){
+			int trajIndex = -1;
+			float minDiffSqrd = 555e10;
+			for(uint iTraj=0; iTraj<gEvt->MCPStartX->size(); iTraj++){
+				float diffSqrd = 1.;
+				diffSqrd *= (gEvt->TrackStartX->at(iTrk) - gEvt->MCPStartX->at(iTraj));
+				diffSqrd *= (gEvt->TrackStartY->at(iTrk) - gEvt->MCPStartY->at(iTraj));
+				diffSqrd *= (gEvt->TrackStartZ->at(iTrk) - gEvt->MCPStartZ->at(iTraj));
+				if(diffSqrd<minDiffSqrd) {
+					minDiffSqrd = diffSqrd;
+					trajIndex = iTraj;
 				}
-				totalResX->Fill(hitX-closeHitTrj[0]);
-				totalResY->Fill(hitY-closeHitTrj[1]);
-				totalResZ->Fill(hitZ-closeHitTrj[2]);
-			} // hits in tracks
-		} // tracks
+			}
+			for(uint iHit=0; iHit<gEvt->TrkHitTrkIndex->size(); iHit++){
+				if(gEvt->TrkHitTrkIndex->at(iHit) != iTrk) continue;
+			}// for hits
+		}// for tracks 
 	}
 
-	TCanvas* c = new TCanvas;
+	gStyle->SetTextFont(42);
+
+	TCanvas* c = new TCanvas("can", "can", 2800, 1500);
+
+    TPad* subPad = new TPad("pad", "pad", 0.0, 0.0, 1.0, 1.0);
+    subPad->Divide(3, 2, 0.01, 0.01);
+    subPad->Draw();
+
+	vtxResX->GetXaxis()->SetTitle("x (cm)");
+	vtxResX->GetYaxis()->SetTitle("min. residual (cm)");
+	vtxResY->GetXaxis()->SetTitle("y (cm)");
+	vtxResY->GetYaxis()->SetTitle("min. residual (cm)");
+	vtxResZ->GetXaxis()->SetTitle("z (cm)");
+	vtxResZ->GetYaxis()->SetTitle("min. residual (cm)");
+
+	vtxResX->SetStats(0);
+	vtxResY->SetStats(0);
+	vtxResZ->SetStats(0);
+
+	subPad->cd(3);
+	vtxResZ->Draw("colz");
+	subPad->cd(2);
+	vtxResY->Draw("colz");
+	subPad->cd(1);
+	vtxResX->Draw("colz");
+
+	totalResX->GetXaxis()->SetTitle("min. x residual (cm)");
+	totalResY->GetXaxis()->SetTitle("min. y residual (cm)");
+	totalResZ->GetXaxis()->SetTitle("min. z residual (cm)");
+
+	subPad->cd(4);
 	totalResX->Draw();
-	c->Print("~/Desktop/resX.eps");
-
-	c = new TCanvas;
+	subPad->cd(5);
 	totalResY->Draw();
-	c->Print("~/Desktop/resY.eps");
-
-	c = new TCanvas;
+	subPad->cd(6);
 	totalResZ->Draw();
-	c->Print("~/Desktop/resZ.eps");
 
-	 
+	TString printStr = "~/Desktop/HgTPChitClusterRes.png";
+	c->Print(printStr);
 
 	inF->Close();
 }
