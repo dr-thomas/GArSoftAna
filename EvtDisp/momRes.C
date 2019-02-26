@@ -18,15 +18,15 @@
 
 void momRes() {
 
-	TFile* inF = new TFile("./rootFiles/anatree_0000.root", "OPEN");
+	TFile* inF = new TFile("./rootFiles/anaMerged.root", "OPEN");
 	if(!inF){
 		cout << "Falied to load input file, exiting" << endl;
 		return;
 	}
-	TDirectory* dir = (TDirectory*)inF->Get("anatree");
-	if(!dir) return;
-	TTree* inT = (TTree*)dir->Get("GArAnaTree");
-	//TTree* inT = (TTree*)inF->Get("GArAnaTree");
+	//TDirectory* dir = (TDirectory*)inF->Get("anatree");
+	//if(!dir) return;
+	//TTree* inT = (TTree*)dir->Get("GArAnaTree");
+	TTree* inT = (TTree*)inF->Get("GArAnaTree");
 	if(!inT) return;
 
 	garEvt* gEvt = new garEvt();
@@ -42,7 +42,7 @@ void momRes() {
 		posBins[ii][2] = (posBins[ii][1]-posBins[ii][0])/binSize;
 	}
 
-	TH2F* resHist = new TH2F("resHist","",50,0,2000,50,-2,2);
+	TH2F* resHist = new TH2F("resHist","",50,0,200,50,-1.5,1.5);
 
 	for(int iEvt=0; iEvt<inT->GetEntries(); iEvt++){
 		inT->GetEntry(iEvt);
@@ -52,9 +52,9 @@ void momRes() {
 		pMomTrue += (gEvt->MCPPY->at(0))*(gEvt->MCPPY->at(0));
 		pMomTrue += (gEvt->MCPPZ->at(0))*(gEvt->MCPPZ->at(0));
 		pMomTrue = TMath::Sqrt(pMomTrue);
-		cout << gEvt->MCPPX->at(0) << " ";
-		cout << gEvt->MCPPY->at(0) << " ";
-		cout << gEvt->MCPPZ->at(0) << endl;
+		//cout << gEvt->MCPPX->at(0) << " ";
+		//cout << gEvt->MCPPY->at(0) << " ";
+		//cout << gEvt->MCPPZ->at(0) << endl;
 
 		float minDiff = 555e10;
 		int bestTrackIndex=-1;
@@ -73,15 +73,19 @@ void momRes() {
 				bestTrackIndex = ii;
 			}
 		}
-		cout << pMomTrue << endl;
 		if(bestTrackIndex>=0){
+			cout << pMomTrue << " " << trackMoms.at(bestTrackIndex) << endl;
 			resHist->Fill(pMomTrue*1000,(trackMoms.at(bestTrackIndex)-pMomTrue)/pMomTrue);
 		}
 	}
 
+	resHist->SetStats(0);
+	resHist->GetXaxis()->SetTitle("true momentum (MeV)");
+	resHist->GetYaxis()->SetTitle("min. fractional residual");
+	resHist->SetTitle("Momentum Residuals");
 	TCanvas* c = new TCanvas;
 	
-	resHist->Draw();
+	resHist->Draw("colz");
 
 	TString printStr = "~/Desktop/bestTrackRes.png";
 	c->Print(printStr);

@@ -47,6 +47,13 @@ void evtDisp(int eventID=0) {
 	TH2F* yzHist = new TH2F("yzHist","Y-Z",(int)posBins[1][2],posBins[1][0],posBins[1][1],(int)posBins[2][2],posBins[2][0],posBins[2][1]);
 
 	inT->GetEntry(eventID);
+	float trueMom = 0;
+	trueMom += (gEvt->MCPPX->at(0))*(gEvt->MCPPX->at(0));
+	trueMom += (gEvt->MCPPY->at(0))*(gEvt->MCPPY->at(0));
+	trueMom += (gEvt->MCPPZ->at(0))*(gEvt->MCPPZ->at(0));
+	trueMom = TMath::Sqrt(trueMom)*1000.;
+
+	cout << "True Momentum: " << trueMom << endl;
 	for(uint ii=0; ii<gEvt->HitX->size(); ii++){
 		xyHist->Fill(gEvt->HitX->at(ii), gEvt->HitY->at(ii),gEvt->HitSig->at(ii));
 		xzHist->Fill(gEvt->HitX->at(ii), gEvt->HitZ->at(ii),gEvt->HitSig->at(ii));
@@ -60,6 +67,10 @@ void evtDisp(int eventID=0) {
     TPad* subPad = new TPad("pad", "pad", 0.0, 0.0, 1.0, 1.0);
     subPad->Divide(3, 1, 0.01, 0.01);
     subPad->Draw();
+
+	xyHist->SetStats(0);
+	xzHist->SetStats(0);
+	yzHist->SetStats(0);
 
 	subPad->cd(3);
 	gPad->SetLogz();

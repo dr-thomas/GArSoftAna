@@ -3,3 +3,6 @@
 rootFiles/*
 .DS_Store
 *.npy
+*.sav
+*.png
+*.csv
