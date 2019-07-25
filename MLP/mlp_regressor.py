@@ -3,14 +3,20 @@ import matplotlib.pyplot as plt
 from sklearn.neural_network import MLPRegressor
 from sklearn import preprocessing
 from scipy import stats
+import pickle
 
-X_data = np.load('./data/pions-0-200/X_train.npy')
-y_data = np.load('./data/pions-0-200/y_train.npy')
+X_data = np.load('./data/protons-0-300/X_train.npy')
+y_data = np.load('./data/protons-0-300/y_train.npy')
 
 for ii in range(len(y_data)):
     y_data[ii] = y_data[ii]*1000.
 
 X_data_scaled = preprocessing.scale(X_data)
+std_scaler = preprocessing.StandardScaler()
+std_scaler.fit(X_data)
+pickle.dump(std_scaler, open('protons_300_nn_full_ss_std_scaler.sav', 'wb'))
+X_data_scaled = std_scaler.transform(X_data)
+#X_data_scaled = X_data
 
 ntrain = 0
 ntest = 0
@@ -42,7 +48,8 @@ for ii, xx in enumerate(X_data_scaled):
         y_train[itrain] = y_data[ii]
         itrain += 1
 
-reg = MLPRegressor(hidden_layer_sizes=(int(nfeatures/2),int(nfeatures/4),int(nfeatures/8)), 
+#reg = MLPRegressor(hidden_layer_sizes=(int(nfeatures/2),int(nfeatures/4),int(nfeatures/8)), 
+reg = MLPRegressor(hidden_layer_sizes=(100), 
                   activation='logistic', solver='adam', alpha=1e-3, verbose=True, tol=5e-6)#lbfgs, adam, sgd for solver
 """
 reg = MLPRegressor(hidden_layer_sizes=(int(nfeatures/2)), 
@@ -67,8 +74,7 @@ reg = MLPRegressor(hidden_layer_sizes=(int(nfeatures/2),int(nfeatures/4),int(nfe
 
 reg.fit(X_train, y_train)
 
-import pickle
-pickle.dump(reg, open('protons_nn_full_ss.sav', 'wb'))
+pickle.dump(reg, open('protons_300_nn_full_ss.sav', 'wb'))
 
 y_pred = reg.predict(X_test)
 

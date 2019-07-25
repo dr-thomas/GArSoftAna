@@ -8,7 +8,7 @@ import os
 xdata_in = []
 ydata_in = []
 
-csvpath = "./csv/pions-0-200/"
+csvpath = "./csv/protons-0-300/"
 for ii, filename in enumerate(os.listdir(csvpath)):
     print("on file:", ii)
     filepath = csvpath + filename
