@@ -8,6 +8,10 @@ import os
 xdata_in = []
 ydata_in = []
 
+"""
+-this code assumes that the csv has been prepared properly (each row has a constant number of enries... remember to write hit data until
+ you run out of hits and then write 0s)
+"""
 csvpath = "./csv/protons-0-300/"
 for ii, filename in enumerate(os.listdir(csvpath)):
     print("on file:", ii)
